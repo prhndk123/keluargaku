@@ -77,11 +77,11 @@ export default function AuthPage() {
               <form onSubmit={doLogin} className="space-y-4 pt-4">
                 <div className="space-y-2">
                   <Label htmlFor="l-email">Email</Label>
-                  <Input id="l-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Input id="l-email" type="email" placeholder="nama@email.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="l-pass">Password</Label>
-                  <Input id="l-pass" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <Input id="l-pass" type="password" placeholder="Masukkan kata sandi" required value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
                 <Button className="w-full" type="submit" disabled={busy || !configured}>
                   {busy ? "Memproses..." : "Masuk"}
@@ -92,15 +92,15 @@ export default function AuthPage() {
               <form onSubmit={doRegister} className="space-y-4 pt-4">
                 <div className="space-y-2">
                   <Label htmlFor="r-name">Nama</Label>
-                  <Input id="r-name" required value={name} onChange={(e) => setName(e.target.value)} />
+                  <Input id="r-name" placeholder="Nama Lengkap" required value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="r-email">Email</Label>
-                  <Input id="r-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Input id="r-email" type="email" placeholder="nama@email.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="r-pass">Password</Label>
-                  <Input id="r-pass" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <Input id="r-pass" type="password" placeholder="Buat kata sandi minimal 6 karakter" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
                 <Button className="w-full" type="submit" disabled={busy || !configured}>
                   {busy ? "Memproses..." : "Buat Akun"}

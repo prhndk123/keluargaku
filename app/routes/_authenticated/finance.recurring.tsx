@@ -86,7 +86,7 @@ export default function RecurringPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="rec-day" className="text-sm font-semibold">Tanggal Jatuh Tempo (1-31)</Label>
-                <Input id="rec-day" type="number" min={1} max={31} value={dateSet} onChange={(e) => setDateSet(e.target.value)} />
+                <Input id="rec-day" type="number" min={1} max={31} placeholder="Contoh: 10" value={dateSet} onChange={(e) => setDateSet(e.target.value)} />
               </div>
             </div>
             <DialogFooter className="mt-4">
