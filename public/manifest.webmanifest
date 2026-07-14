@@ -1,0 +1,12 @@
+{
+  "name": "KeluargaKu",
+  "short_name": "KeluargaKu",
+  "description": "Pencatatan agenda, anggota, dan keuangan keluarga.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "64x64", "type": "image/x-icon" }
+  ]
+}
