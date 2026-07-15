@@ -3,6 +3,7 @@ import { useState } from "react";
 import { membersApi, type Member } from "@/services/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { cloudinaryApi } from "@/services/cloudinary";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ import { useAppNotification } from "@/hooks/useAppNotification";
 export default function MembersPage() {
   const qc = useQueryClient();
   const notify = useAppNotification();
+  const { user, updateUser } = useAuth();
   const { data = [], isLoading } = useQuery({ queryKey: ["members"], queryFn: () => membersApi.list() });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Member | null>(null);
@@ -65,9 +67,18 @@ export default function MembersPage() {
       if (editing?.objectId) return membersApi.update({ ...editing, ...payload });
       return membersApi.create(payload);
     },
-    onSuccess: () => {
+    onSuccess: (savedMember: any) => {
       qc.invalidateQueries({ queryKey: ["members"] });
       notify(editing ? "Anggota diperbarui" : "Anggota ditambahkan", name);
+      if (user && savedMember && user.objectId === savedMember.objectId) {
+        updateUser({
+          ...user,
+          name: savedMember.name,
+          alias: savedMember.alias,
+          role: savedMember.role,
+          photoUrl: savedMember.photoUrl,
+        });
+      }
       setOpen(false); reset();
     },
   });

@@ -25,6 +25,7 @@ type AuthCtx = {
   login: (alias: string, password: string) => Promise<void>;
   register: (name: string, alias: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (updatedUser: AppUser) => void;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
@@ -96,9 +97,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("keluargaku_user");
   }, []);
 
+  const updateUser = useCallback((updated: AppUser) => {
+    setUser(updated);
+    localStorage.setItem("keluargaku_user", JSON.stringify(updated));
+  }, []);
+
   const value = useMemo(
-    () => ({ user, loading, configured, login, register, logout }),
-    [user, loading, configured, login, register, logout],
+    () => ({ user, loading, configured, login, register, logout, updateUser }),
+    [user, loading, configured, login, register, logout, updateUser],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
