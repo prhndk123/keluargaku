@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { eventsApi, financesApi, recurringApi } from "@/services/api";
 import { CalendarClock, TrendingUp, TrendingDown, AlertCircle, CheckCircle2, Wallet, Calendar, Sparkles } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const rupiah = (n: number) =>
   new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const now = new Date();
   const financesQ = useQuery({
     queryKey: ["finances", now.getFullYear(), now.getMonth()],
@@ -33,7 +35,9 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">Dashboard</h1>
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
+          Halo, {user?.alias || user?.name || "Keluarga"}! <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" />
+        </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
           Ringkasan aktivitas keluarga Anda di bulan {now.toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
         </p>

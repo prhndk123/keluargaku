@@ -12,7 +12,7 @@ import { Heart } from "lucide-react";
 export default function AuthPage() {
   const { user, login, register, loading, configured } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [alias, setAlias] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -24,7 +24,7 @@ export default function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await login(email, password);
+      await login(alias, password);
       toast.success("Selamat datang kembali!");
       navigate("/");
     } catch (err) {
@@ -38,7 +38,7 @@ export default function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await register(name, email, password);
+      await register(name, alias, password);
       toast.success("Akun berhasil dibuat");
       navigate("/");
     } catch (err) {
@@ -76,8 +76,8 @@ export default function AuthPage() {
             <TabsContent value="login">
               <form onSubmit={doLogin} className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="l-email">Email</Label>
-                  <Input id="l-email" type="email" placeholder="nama@email.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Label htmlFor="l-alias">Nama Panggilan (Alias)</Label>
+                  <Input id="l-alias" type="text" placeholder="Contoh: budi" required value={alias} onChange={(e) => setAlias(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="l-pass">Password</Label>
@@ -91,12 +91,12 @@ export default function AuthPage() {
             <TabsContent value="register">
               <form onSubmit={doRegister} className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="r-name">Nama</Label>
+                  <Label htmlFor="r-name">Nama Lengkap</Label>
                   <Input id="r-name" placeholder="Nama Lengkap" required value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="r-email">Email</Label>
-                  <Input id="r-email" type="email" placeholder="nama@email.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Label htmlFor="r-alias">Nama Panggilan (Alias)</Label>
+                  <Input id="r-alias" type="text" placeholder="Contoh: budi" required value={alias} onChange={(e) => setAlias(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="r-pass">Password</Label>

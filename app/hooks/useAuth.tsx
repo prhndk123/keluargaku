@@ -13,29 +13,20 @@ export type AppUser = {
   objectId: string;
   email: string;
   name?: string;
+  alias?: string;
+  role?: string;
 };
 
 type AuthCtx = {
   user: AppUser | null;
   loading: boolean;
   configured: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (alias: string, password: string) => Promise<void>;
+  register: (name: string, alias: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
-
-function toAppUser(raw: unknown): AppUser | null {
-  if (!raw || typeof raw !== "object") return null;
-  const r = raw as Record<string, unknown>;
-  if (!r.objectId) return null;
-  return {
-    objectId: String(r.objectId),
-    email: String(r.email ?? ""),
-    name: r.name ? String(r.name) : undefined,
-  };
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
@@ -43,68 +34,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const configured = isBackendlessConfigured();
 
   useEffect(() => {
-    if (!configured) {
-      setLoading(false);
-      return;
+    if (configured) {
+      initBackendless();
     }
-    initBackendless();
-    (async () => {
-      try {
-        const raw = await (
-          Backendless.UserService as unknown as {
-            getCurrentUser: (reload?: boolean) => Promise<unknown>;
-          }
-        ).getCurrentUser(false);
-        setUser(toAppUser(raw));
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    const saved = localStorage.getItem("keluargaku_user");
+    if (saved) {
+      setUser(JSON.parse(saved));
+    }
+    setLoading(false);
   }, [configured]);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (alias: string, password: string) => {
     initBackendless();
-    const raw = await (
-      Backendless.UserService as unknown as {
-        login: (e: string, p: string, stayLoggedIn: boolean) => Promise<unknown>;
-      }
-    ).login(email, password, true);
-    setUser(toAppUser(raw));
+    const query = (Backendless as any).DataQueryBuilder.create()
+      .setWhereClause(`alias = '${alias}' AND password = '${password}'`);
+    const results = await Backendless.Data.of("Members").find(query);
+    if (!results || results.length === 0) {
+      throw new Error("Nama panggilan atau kata sandi salah.");
+    }
+    const member = results[0] as any;
+    const appUser: AppUser = {
+      objectId: member.objectId,
+      email: (member.alias || "member") + "@keluarga.local",
+      name: member.name,
+      alias: member.alias,
+      role: member.role,
+    };
+    setUser(appUser);
+    localStorage.setItem("keluargaku_user", JSON.stringify(appUser));
   }, []);
 
   const register = useCallback(
-    async (name: string, email: string, password: string) => {
+    async (name: string, alias: string, password: string) => {
       initBackendless();
-      const BL = Backendless as unknown as {
-        User: new () => Record<string, unknown>;
-        UserService: {
-          register: (u: unknown) => Promise<unknown>;
-          login: (e: string, p: string, stay: boolean) => Promise<unknown>;
-        };
+      const newMember = {
+        name,
+        alias,
+        password,
+        role: "Kepala Keluarga",
+        birthDate: Date.now(),
       };
-      const newUser = new BL.User();
-      newUser.email = email;
-      newUser.password = password;
-      newUser.name = name;
-      await BL.UserService.register(newUser);
-      const raw = await BL.UserService.login(email, password, true);
-      setUser(toAppUser(raw));
+      const saved = await Backendless.Data.of("Members").save(newMember) as any;
+      const appUser: AppUser = {
+        objectId: saved.objectId,
+        email: (saved.alias || "member") + "@keluarga.local",
+        name: saved.name,
+        alias: saved.alias,
+        role: saved.role,
+      };
+      setUser(appUser);
+      localStorage.setItem("keluargaku_user", JSON.stringify(appUser));
     },
     [],
   );
 
   const logout = useCallback(async () => {
-    initBackendless();
-    try {
-      await (
-        Backendless.UserService as unknown as { logout: () => Promise<void> }
-      ).logout();
-    } catch {
-      // ignore
-    }
     setUser(null);
+    localStorage.removeItem("keluargaku_user");
   }, []);
 
   const value = useMemo(

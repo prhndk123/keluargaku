@@ -22,13 +22,28 @@ export default function MembersPage() {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [birthDate, setBirthDate] = useState("");
+  const [alias, setAlias] = useState("");
+  const [password, setPassword] = useState("");
   const [deletingMember, setDeletingMember] = useState<Member | null>(null);
 
-  const reset = () => { setEditing(null); setName(""); setRole(""); setBirthDate(""); };
+  const reset = () => { 
+    setEditing(null); 
+    setName(""); 
+    setRole(""); 
+    setBirthDate(""); 
+    setAlias(""); 
+    setPassword(""); 
+  };
 
   const save = useMutation({
     mutationFn: async () => {
-      const payload = { name, role, birthDate: new Date(birthDate).getTime() };
+      const payload = { 
+        name, 
+        role, 
+        birthDate: new Date(birthDate).getTime(),
+        alias,
+        password: password || undefined
+      };
       if (editing?.objectId) return membersApi.update({ ...editing, ...payload });
       return membersApi.create(payload);
     },
@@ -51,6 +66,8 @@ export default function MembersPage() {
   const openEdit = (m: Member) => {
     setEditing(m); setName(m.name); setRole(m.role);
     setBirthDate(new Date(m.birthDate).toISOString().slice(0, 10));
+    setAlias(m.alias || "");
+    setPassword(m.password || "");
     setOpen(true);
   };
 
@@ -86,6 +103,14 @@ export default function MembersPage() {
               <div className="space-y-2">
                 <Label htmlFor="m-name" className="text-sm font-semibold">Nama Lengkap</Label>
                 <Input id="m-name" placeholder="Contoh: Budi Santoso" value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="m-alias" className="text-sm font-semibold">Nama Panggilan (Alias untuk Login)</Label>
+                <Input id="m-alias" placeholder="Contoh: budi" value={alias} onChange={(e) => setAlias(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="m-password" className="text-sm font-semibold">Kata Sandi (Password Login)</Label>
+                <Input id="m-password" type="password" placeholder={editing ? "Kosongkan jika tidak diubah" : "Minimal 6 karakter"} value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="m-role" className="text-sm font-semibold">Peran</Label>
@@ -137,7 +162,7 @@ export default function MembersPage() {
               </div>
             </div>
             <DialogFooter className="mt-4">
-              <Button className="w-full sm:w-auto" onClick={() => save.mutate()} disabled={!name || !role || !birthDate || save.isPending}>
+              <Button className="w-full sm:w-auto" onClick={() => save.mutate()} disabled={!name || !alias || (!editing && !password) || !role || !birthDate || save.isPending}>
                 {save.isPending ? "Menyimpan..." : "Simpan Anggota"}
               </Button>
             </DialogFooter>

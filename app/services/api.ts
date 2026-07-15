@@ -5,6 +5,8 @@ export type Member = {
   name: string;
   role: string;
   birthDate: number | string; // stored as datetime
+  alias: string;
+  password?: string;
 };
 
 export type Finance = {
