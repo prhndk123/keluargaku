@@ -3,9 +3,9 @@ import { Home, Calendar, Users, Wallet } from "lucide-react";
 
 const tabs = [
   { to: "/", label: "Dashboard", end: true, icon: Home },
+  { to: "/finance", label: "Keuangan", end: false, icon: Wallet },
   { to: "/agenda", label: "Agenda", end: false, icon: Calendar },
   { to: "/members", label: "Keluarga", end: false, icon: Users },
-  { to: "/finance", label: "Keuangan", end: false, icon: Wallet },
 ] as const;
 
 export function BottomNav() {
