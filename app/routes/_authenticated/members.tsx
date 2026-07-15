@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { membersApi, type Member } from "@/services/api";
 import { Card, CardContent } from "@/components/ui/card";
+import { cloudinaryApi } from "@/services/cloudinary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +25,8 @@ export default function MembersPage() {
   const [birthDate, setBirthDate] = useState("");
   const [alias, setAlias] = useState("");
   const [password, setPassword] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState("");
   const [deletingMember, setDeletingMember] = useState<Member | null>(null);
 
   const reset = () => { 
@@ -33,16 +36,31 @@ export default function MembersPage() {
     setBirthDate(""); 
     setAlias(""); 
     setPassword(""); 
+    setPhotoFile(null);
+    setPhotoPreview("");
   };
 
   const save = useMutation({
     mutationFn: async () => {
+      let finalPhotoUrl = editing?.photoUrl || "";
+      if (photoFile) {
+        if (editing?.photoUrl) {
+          try {
+            await cloudinaryApi.deleteByUrl(editing.photoUrl);
+          } catch (err) {
+            console.error("Gagal menghapus foto lama di Cloudinary:", err);
+          }
+        }
+        finalPhotoUrl = await cloudinaryApi.upload(photoFile);
+      }
+
       const payload = { 
         name, 
         role, 
         birthDate: new Date(birthDate).getTime(),
         alias,
-        password: password || undefined
+        password: password || undefined,
+        photoUrl: finalPhotoUrl || undefined
       };
       if (editing?.objectId) return membersApi.update({ ...editing, ...payload });
       return membersApi.create(payload);
@@ -55,7 +73,17 @@ export default function MembersPage() {
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) => membersApi.remove(id),
+    mutationFn: async (id: string) => {
+      const member = data.find((m) => m.objectId === id);
+      if (member?.photoUrl) {
+        try {
+          await cloudinaryApi.deleteByUrl(member.photoUrl);
+        } catch (err) {
+          console.error("Gagal menghapus foto di Cloudinary:", err);
+        }
+      }
+      return membersApi.remove(id);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["members"] });
       notify("Anggota dihapus", deletingMember?.name);
@@ -68,6 +96,8 @@ export default function MembersPage() {
     setBirthDate(new Date(m.birthDate).toISOString().slice(0, 10));
     setAlias(m.alias || "");
     setPassword(m.password || "");
+    setPhotoFile(null);
+    setPhotoPreview(m.photoUrl || "");
     setOpen(true);
   };
 
@@ -100,6 +130,31 @@ export default function MembersPage() {
           <DialogContent className="max-w-sm sm:max-w-md rounded-2xl">
             <DialogHeader><DialogTitle className="text-xl font-bold">{editing ? "Ubah Anggota" : "Anggota Baru"}</DialogTitle></DialogHeader>
             <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="m-photo" className="text-sm font-semibold">Foto Profil</Label>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-xl border border-muted bg-muted/30 flex items-center justify-center overflow-hidden shrink-0">
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <User className="h-6 w-6 text-muted-foreground" />
+                    )}
+                  </div>
+                  <Input 
+                    id="m-photo" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setPhotoFile(file);
+                        setPhotoPreview(URL.createObjectURL(file));
+                      }
+                    }} 
+                    className="flex-1 cursor-pointer file:text-primary file:font-semibold"
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="m-name" className="text-sm font-semibold">Nama Lengkap</Label>
                 <Input id="m-name" placeholder="Contoh: Budi Santoso" value={name} onChange={(e) => setName(e.target.value)} />
@@ -191,8 +246,12 @@ export default function MembersPage() {
           data.map((m) => (
             <Card key={m.objectId} className="overflow-hidden border border-muted bg-card/60 backdrop-blur-sm hover:bg-card hover:border-primary/20 shadow-sm hover:shadow-md transition-all duration-300">
               <CardContent className="flex items-center gap-3 py-3 px-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-violet-500/10 text-primary border border-primary/10">
-                  <span className="text-sm font-bold tracking-wider">{getInitials(m.name)}</span>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-violet-500/10 text-primary border border-primary/10 overflow-hidden">
+                  {m.photoUrl ? (
+                    <img src={m.photoUrl} alt={m.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-sm font-bold tracking-wider">{getInitials(m.name)}</span>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm sm:text-base text-foreground truncate">{m.name}</p>

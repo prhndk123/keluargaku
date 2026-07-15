@@ -15,6 +15,7 @@ export type AppUser = {
   name?: string;
   alias?: string;
   role?: string;
+  photoUrl?: string;
 };
 
 type AuthCtx = {
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name: member.name,
       alias: member.alias,
       role: member.role,
+      photoUrl: member.photoUrl,
     };
     setUser(appUser);
     localStorage.setItem("keluargaku_user", JSON.stringify(appUser));
@@ -81,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: saved.name,
         alias: saved.alias,
         role: saved.role,
+        photoUrl: saved.photoUrl,
       };
       setUser(appUser);
       localStorage.setItem("keluargaku_user", JSON.stringify(appUser));

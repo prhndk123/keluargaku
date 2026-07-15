@@ -7,6 +7,7 @@ export type Member = {
   birthDate: number | string; // stored as datetime
   alias: string;
   password?: string;
+  photoUrl?: string;
 };
 
 export type Finance = {

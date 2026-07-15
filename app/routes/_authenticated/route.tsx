@@ -5,7 +5,7 @@ import { useAutoSyncRecurring } from "@/hooks/useAutoSyncRecurring";
 import { ensureNotificationPermission } from "@/hooks/useAppNotification";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 export default function AuthenticatedLayout() {
@@ -36,9 +36,18 @@ export default function AuthenticatedLayout() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background">
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
-        <div>
-          <p className="text-xs text-muted-foreground">Halo,</p>
-          <p className="text-sm font-semibold">{user.alias || user.name}</p>
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full border border-primary/20 bg-muted flex items-center justify-center overflow-hidden shrink-0">
+            {user.photoUrl ? (
+              <img src={user.photoUrl} alt={user.alias} className="h-full w-full object-cover" />
+            ) : (
+              <User className="h-4.5 w-4.5 text-muted-foreground" />
+            )}
+          </div>
+          <div>
+            <p className="text-[10px] text-muted-foreground leading-none">Halo,</p>
+            <p className="text-sm font-semibold mt-0.5 leading-none">{user.alias || user.name}</p>
+          </div>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setShowLogoutConfirm(true)} aria-label="Keluar">
           <LogOut className="h-5 w-5" />
